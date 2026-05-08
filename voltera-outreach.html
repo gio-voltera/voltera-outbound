@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voltera Outreach · Academic Lead Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  :root {
+    --bg: #0f0f11;
+    --bg2: #17171a;
+    --bg3: #1e1e22;
+    --border: #2a2a30;
+    --border2: #35353d;
+    --text: #f0eff4;
+    --text2: #9998a8;
+    --text3: #5e5d6e;
+    --accent: #4f8ef7;
+    --accent-dim: #1a2d4f;
+    --accent-text: #a8c4fc;
+    --green: #3ecf8e;
+    --green-dim: #0e2e1f;
+    --amber: #f5a623;
+    --amber-dim: #2e1f08;
+    --red: #f56565;
+    --purple: #9f7aea;
+    --purple-dim: #1e1530;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; height: 100vh; overflow: hidden; }
+
+  /* API KEY SCREEN */
+  #api-screen {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; z-index: 100;
+  }
+  .api-card {
+    width: 420px; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 40px; text-align: center;
+  }
+  .api-logo { width: 48px; height: 48px; background: var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+  .api-logo i { color: white; font-size: 24px; }
+  .api-card h1 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+  .api-card p { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.6; }
+  .api-input { width: 100%; padding: 10px 14px; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; margin-bottom: 12px; outline: none; }
+  .api-input:focus { border-color: var(--accent); }
+  .api-btn { width: 100%; padding: 11px; background: var(--accent); color: white; border: none; border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; }
+  .api-btn:hover { opacity: 0.9; }
+  .api-note { font-size: 11px; color: var(--text3); margin-top: 12px; }
+  .api-note a { color: var(--accent); text-decoration: none; }
+
+  /* MAIN APP */
+  #app { display: none; height: 100vh; flex-direction: column; }
+  #app.visible { display: flex; }
+
+  /* TOP NAV */
+  .topnav {
+    display: flex; align-items: center; gap: 0;
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 0 20px; height: 52px; flex-shrink: 0;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 10px; margin-right: 28px; }
+  .nav-logo { width: 26px; height: 26px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .nav-logo i { color: white; font-size: 14px; }
+  .nav-brand-text { font-size: 14px; font-weight: 600; }
+  .nav-brand-sub { font-size: 11px; color: var(--text3); margin-left: 2px; }
+  .nav-tabs { display: flex; gap: 2px; flex: 1; }
+  .nav-tab { display: flex; align-items: center; gap: 7px; padding: 7px 14px; font-size: 13px; color: var(--text2); cursor: pointer; border-radius: var(--radius); transition: all 0.1s; border: none; background: none; font-family: 'DM Sans', sans-serif; }
+  .nav-tab:hover { color: var(--text); background: var(--bg3); }
+  .nav-tab.active { color: var(--accent-text); background: var(--accent-dim); }
+  .nav-tab i { font-size: 15px; }
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .nav-badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: var(--accent-dim); color: var(--accent-text); font-weight: 500; }
+
+  /* LAYOUT */
+  .app-body { flex: 1; overflow: hidden; display: flex; }
+
+  /* PANELS */
+  .panel { flex: 1; overflow-y: auto; padding: 20px; display: none; }
+  .panel.active { display: block; }
+
+  /* DISCOVER */
+  .filter-bar { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 16px; }
+  .filter-row { display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter-col { flex: 1; min-width: 160px; }
+  .filter-label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  select { width: 100%; padding: 7px 10px; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; outline: none; }
+  select:focus { border-color: var(--accent); }
+  .filter-group { margin-bottom: 10px; }
+  .filter-group:last-child { margin-bottom: 0; }
+  .filter-group-label { font-size: 10px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { padding: 4px 10px; font-size: 11px; border: 1px solid var(--border2); border-radius: 20px; cursor: pointer; background: var(--bg3); color: var(--text2); transition: all 0.1s; user-select: none; }
+  .chip:hover { border-color: var(--border2); color: var(--text); }
+  .chip.on { background: var(--accent-dim); color: var(--accent-text); border-color: var(--accent); }
+  .search-btn { display: flex; align-items: center; gap: 7px; padding: 9px 18px; background: var(--accent); color: white; border: none; border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; margin-top: 14px; }
+  .search-btn:hover { opacity: 0.9; }
+  .search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .search-btn i { font-size: 15px; }
+
+  .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .results-title { font-size: 13px; color: var(--text2); }
+  .results-count { font-size: 12px; color: var(--green); background: var(--green-dim); padding: 2px 8px; border-radius: 20px; }
+
+  /* LEAD CARDS */
+  .lead-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s; }
+  .lead-card:hover { border-color: var(--border2); }
+  .lead-card.selected { border-color: var(--accent); }
+  .lc-top { display: flex; gap: 12px; align-items: flex-start; }
+  .lc-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .lc-info { flex: 1; min-width: 0; }
+  .lc-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; display: flex; align-items: center; gap: 8px; }
+  .lc-title { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+  .lc-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .ltag { font-size: 11px; padding: 2px 7px; border-radius: 4px; }
+  .ltag.blue { background: var(--accent-dim); color: var(--accent-text); }
+  .ltag.amber { background: var(--amber-dim); color: var(--amber); }
+  .ltag.gray { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
+  .ltag.nova { background: var(--accent); color: white; }
+  .lc-fit { font-size: 11px; color: var(--text3); margin: 8px 0 0 52px; line-height: 1.5; }
+  .lc-actions { display: flex; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .sdot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .sdot.new { background: var(--accent); }
+  .sdot.contacted { background: var(--green); }
+  .sdot.replied { background: var(--amber); }
+  .sdot.qualified { background: var(--purple); }
+
+  /* BUTTONS */
+  .btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; font-size: 12px; border: 1px solid var(--border2); border-radius: var(--radius); cursor: pointer; background: var(--bg3); color: var(--text2); font-family: 'DM Sans', sans-serif; transition: all 0.1s; white-space: nowrap; }
+  .btn:hover { color: var(--text); border-color: var(--border2); background: var(--bg2); }
+  .btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .btn.primary:hover { opacity: 0.9; }
+  .btn i { font-size: 14px; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* LOADING STATES */
+  .skeleton { background: var(--bg3); border-radius: 4px; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+  .loading-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 10px; display: flex; gap: 12px; align-items: flex-start; }
+  .spin { animation: spin 0.8s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .status-msg { font-size: 12px; color: var(--text2); padding: 8px 0; display: flex; align-items: center; gap: 8px; }
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text3); }
+  .empty-state i { font-size: 32px; display: block; margin-bottom: 10px; }
+  .empty-state p { font-size: 13px; line-height: 1.6; }
+
+  /* DRAWER */
+  .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; display: flex; justify-content: flex-end; }
+  .drawer { width: 400px; height: 100vh; background: var(--bg2); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
+  .drawer-head { padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; position: sticky; top: 0; background: var(--bg2); z-index: 1; }
+  .drawer-name { flex: 1; font-size: 15px; font-weight: 600; }
+  .drawer-sub { font-size: 12px; color: var(--text2); margin-top: 1px; }
+  .dsec { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .dsec-label { font-size: 10px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+  .drow { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; font-size: 13px; line-height: 1.5; }
+  .drow i { font-size: 15px; color: var(--text3); margin-top: 1px; flex-shrink: 0; }
+  .drow a { color: var(--accent); text-decoration: none; word-break: break-all; }
+  .drow a:hover { text-decoration: underline; }
+  .note-dim { font-size: 11px; color: var(--text3); font-style: italic; }
+  .pub-item { font-size: 12px; color: var(--text2); padding: 6px 0; border-top: 1px solid var(--border); line-height: 1.5; }
+  .pub-item:first-child { border-top: none; }
+  .fit-box { background: var(--accent-dim); border: 1px solid var(--accent); border-radius: var(--radius); padding: 12px; font-size: 12px; color: var(--accent-text); line-height: 1.6; }
+
+  /* COMPOSE */
+  .compose-wrap { max-width: 700px; }
+  .compose-hint { background: var(--accent-dim); border: 1px solid var(--accent); border-radius: var(--radius); padding: 10px 14px; font-size: 12px; color: var(--accent-text); margin-bottom: 14px; display: none; }
+  .field { margin-bottom: 14px; }
+  .field label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 6px; }
+  .field input, .field textarea { width: 100%; padding: 9px 12px; background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.15s; }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); }
+  .field textarea { resize: vertical; min-height: 240px; line-height: 1.7; }
+  .compose-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .confirm-msg { font-size: 12px; color: var(--green); display: none; align-items: center; gap: 5px; }
+
+  /* PIPELINE */
+  .kanban { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .kol { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px; }
+  .kol-head { font-size: 12px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; color: var(--text2); }
+  .kol-count { font-size: 11px; background: var(--bg3); color: var(--text3); padding: 1px 7px; border-radius: 10px; }
+  .kcard { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; margin-bottom: 8px; }
+  .kcard-name { font-size: 12px; font-weight: 500; margin-bottom: 2px; }
+  .kcard-sub { font-size: 11px; color: var(--text2); }
+
+  /* NOTES */
+  .note-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 10px; }
+  .note-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .note-who { font-size: 13px; font-weight: 500; }
+  .note-when { font-size: 11px; color: var(--text3); }
+  .note-body { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+  /* HUBSPOT */
+  .hs-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 14px; max-width: 560px; }
+  .hs-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .hs-icon { width: 36px; height: 36px; background: var(--amber-dim); color: var(--amber); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .hs-title { font-size: 14px; font-weight: 600; }
+  .hs-sub { font-size: 12px; color: var(--text2); }
+  .srow { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--border); font-size: 13px; }
+  .sok { font-size: 12px; color: var(--green); display: flex; align-items: center; gap: 5px; }
+
+  /* GENERATING OVERLAY */
+  .gen-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 40; display: none; align-items: center; justify-content: center; }
+  .gen-box { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px 32px; font-size: 14px; display: flex; align-items: center; gap: 12px; }
+
+  /* PAGE HEADER */
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .page-title { font-size: 18px; font-weight: 600; }
+  .page-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- API KEY SCREEN -->
+<div id="api-screen">
+  <div class="api-card">
+    <div class="api-logo"><i class="ti ti-printer"></i></div>
+    <h1>Voltera Outreach</h1>
+    <p>Academic lead discovery and engagement for North America. Enter your Anthropic API key to get started — it's stored only in your browser.</p>
+    <input type="password" class="api-input" id="api-key-input" placeholder="sk-ant-api03-..." />
+    <button class="api-btn" onclick="startApp()">Launch App</button>
+    <div class="api-note">Get your API key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <nav class="topnav">
+    <div class="nav-brand">
+      <div class="nav-logo"><i class="ti ti-printer"></i></div>
+      <span class="nav-brand-text">Voltera</span>
+      <span class="nav-brand-sub">Outreach</span>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showPanel('discover',this)"><i class="ti ti-search"></i> Find Leads</button>
+      <button class="nav-tab" onclick="showPanel('compose',this)"><i class="ti ti-mail"></i> Outreach</button>
+      <button class="nav-tab" onclick="showPanel('pipeline',this)"><i class="ti ti-layout-kanban"></i> Pipeline</button>
+      <button class="nav-tab" onclick="showPanel('notes',this)"><i class="ti ti-notes"></i> Call Notes</button>
+      <button class="nav-tab" onclick="showPanel('hubspot',this)"><i class="ti ti-refresh"></i> HubSpot</button>
+    </div>
+    <div class="nav-right">
+      <span class="nav-badge" id="lead-badge">0 leads</span>
+      <button class="btn" onclick="logout()" style="font-size:11px;padding:4px 10px;"><i class="ti ti-logout"></i></button>
+    </div>
+  </nav>
+
+  <div class="app-body">
+
+    <!-- DISCOVER -->
+    <div class="panel active" id="panel-discover">
+      <div class="page-header">
+        <div><div class="page-title">Find Academic Leads</div><div class="page-sub">AI-powered discovery across North American universities</div></div>
+      </div>
+      <div class="filter-bar">
+        <div class="filter-row">
+          <div class="filter-col">
+            <div class="filter-label">🇺🇸 US State</div>
+            <select id="us-state">
+              <option value="">All US states</option>
+              <option>California</option><option>Massachusetts</option><option>New York</option>
+              <option>Texas</option><option>Illinois</option><option>Michigan</option>
+              <option>Pennsylvania</option><option>North Carolina</option><option>Georgia</option>
+              <option>Washington</option><option>Colorado</option><option>Ohio</option>
+              <option>Maryland</option><option>Virginia</option><option>Florida</option>
+              <option>Arizona</option><option>Oregon</option><option>Minnesota</option>
+              <option>New Jersey</option><option>Connecticut</option>
+            </select>
+          </div>
+          <div class="filter-col">
+            <div class="filter-label">🇨🇦 CA Province</div>
+            <select id="ca-province">
+              <option value="">All provinces</option>
+              <option>Ontario</option><option>British Columbia</option><option>Quebec</option>
+              <option>Alberta</option><option>Nova Scotia</option><option>Manitoba</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-group-label">Flexible & Wearable</div>
+          <div class="chips">
+            <span class="chip on" data-filter="flexible electronics">Flexible electronics</span>
+            <span class="chip on" data-filter="stretchable circuits">Stretchable circuits</span>
+            <span class="chip on" data-filter="wearable sensors">Wearable sensors</span>
+            <span class="chip on" data-filter="bioelectronics">Bioelectronics</span>
+            <span class="chip" data-filter="flexible hybrid electronics">Hybrid electronics</span>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-group-label">Sensing & RF</div>
+          <div class="chips">
+            <span class="chip on" data-filter="printed sensors">Printed sensors</span>
+            <span class="chip on" data-filter="printed antennas and RF devices">Antennas & RF</span>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-group-label">Advanced Manufacturing</div>
+          <div class="chips">
+            <span class="chip on" data-filter="in-mold electronics">In-mold electronics</span>
+            <span class="chip on" data-filter="MEMS device fabrication">MEMS fabrication</span>
+            <span class="chip" data-filter="microdispensing">Microdispensing</span>
+            <span class="chip" data-filter="functional inks">Functional inks</span>
+            <span class="chip" data-filter="printed photovoltaics">Printed PV</span>
+          </div>
+        </div>
+
+        <button class="search-btn" id="search-btn" onclick="searchLeads()">
+          <i class="ti ti-sparkles"></i> Search Academics
+        </button>
+      </div>
+
+      <div id="results-area">
+        <div class="empty-state">
+          <i class="ti ti-user-search"></i>
+          <p>Set your filters and click "Search Academics"<br>Claude will find real researchers and enrich their profiles</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPOSE -->
+    <div class="panel" id="panel-compose">
+      <div class="page-header">
+        <div><div class="page-title">Outreach Email</div><div class="page-sub">AI-drafted, Voltera-aware personalized emails</div></div>
+      </div>
+      <div class="compose-wrap">
+        <div class="compose-hint" id="compose-hint"></div>
+        <div class="field"><label>To</label><input type="text" id="email-to" placeholder="Select a lead from Find Leads..." readonly /></div>
+        <div class="field"><label>Subject</label><input type="text" id="email-subject" placeholder="Click Generate to populate..." /></div>
+        <div class="field"><label>Message</label><textarea id="email-body" placeholder="Select a lead then click Generate Email..."></textarea></div>
+        <div class="compose-actions">
+          <button class="btn primary" onclick="generateEmail()" id="gen-btn"><i class="ti ti-sparkles"></i> Generate Email</button>
+          <button class="btn" onclick="sendEmail()"><i class="ti ti-send"></i> Send & Log to HubSpot</button>
+          <span class="confirm-msg" id="confirm-msg"><i class="ti ti-check"></i> Sent & synced!</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PIPELINE -->
+    <div class="panel" id="panel-pipeline">
+      <div class="page-header">
+        <div><div class="page-title">Engagement Pipeline</div><div class="page-sub">Track leads through your outreach process</div></div>
+      </div>
+      <div class="kanban">
+        <div class="kol"><div class="kol-head">New <span class="kol-count" id="cnt-new">0</span></div><div id="col-new"></div></div>
+        <div class="kol"><div class="kol-head">Contacted <span class="kol-count" id="cnt-contacted">0</span></div><div id="col-contacted"></div></div>
+        <div class="kol"><div class="kol-head">Replied <span class="kol-count" id="cnt-replied">0</span></div><div id="col-replied"></div></div>
+        <div class="kol"><div class="kol-head">Qualified <span class="kol-count" id="cnt-qualified">0</span></div><div id="col-qualified"></div></div>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="panel" id="panel-notes">
+      <div class="page-header">
+        <div><div class="page-title">Call Notes</div><div class="page-sub">Log notes from calls and meetings</div></div>
+        <button class="btn primary" onclick="logNote()"><i class="ti ti-plus"></i> Log Call</button>
+      </div>
+      <div id="notes-list"><div class="empty-state"><i class="ti ti-phone"></i><p>No call notes yet.</p></div></div>
+    </div>
+
+    <!-- HUBSPOT -->
+    <div class="panel" id="panel-hubspot">
+      <div class="page-header">
+        <div><div class="page-title">HubSpot Sync</div><div class="page-sub">Sync leads and pipeline to your CRM</div></div>
+        <button class="btn primary" onclick="syncHubspot()" id="hs-btn"><i class="ti ti-refresh"></i> Sync All Leads</button>
+      </div>
+      <div class="hs-card">
+        <div class="hs-top">
+          <div class="hs-icon"><i class="ti ti-brand-hubspot"></i></div>
+          <div><div class="hs-title">HubSpot CRM</div><div class="hs-sub">Connected · voltera.hubspot.com</div></div>
+        </div>
+        <div class="srow"><span>Contacts synced</span><span id="hs-synced" class="sok"><i class="ti ti-circle"></i> 0 contacts</span></div>
+        <div class="srow"><span>Last sync</span><span id="hs-time" style="font-size:12px;color:var(--text3);">Never</span></div>
+        <div class="srow"><span>Pipeline mapping</span><span class="sok"><i class="ti ti-check"></i> Active</span></div>
+      </div>
+      <div class="hs-card" style="max-width:560px;">
+        <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Field Mapping</div>
+        <div style="font-size:12px;color:var(--text2);line-height:2.2;">
+          Name → Contact name &nbsp;·&nbsp; Institution → Company &nbsp;·&nbsp; State/Province → Region<br>
+          Lab → Department &nbsp;·&nbsp; Research area → Industry notes &nbsp;·&nbsp; Product fit → Deal type<br>
+          Email → Email &nbsp;·&nbsp; Phone → Phone &nbsp;·&nbsp; Status → Deal stage
+        </div>
+      </div>
+      <div id="hs-log" style="max-width:560px;"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PROFILE DRAWER -->
+<div id="drawer" style="display:none;" onclick="closeDrawer(event)">
+  <div class="drawer-overlay" style="display:contents;">
+  <div class="drawer" onclick="event.stopPropagation()">
+    <div class="drawer-head">
+      <div id="d-av" class="lc-avatar" style="width:42px;height:42px;font-size:14px;"></div>
+      <div style="flex:1;min-width:0;">
+        <div class="drawer-name" id="d-name"></div>
+        <div class="drawer-sub" id="d-sub"></div>
+      </div>
+      <button class="btn" onclick="document.getElementById('drawer').style.display='none'" style="padding:4px 8px;"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="dsec">
+      <div class="dsec-label">Contact Info</div>
+      <div class="drow"><i class="ti ti-mail"></i><div id="d-email"></div></div>
+      <div class="drow"><i class="ti ti-phone"></i><div id="d-phone"></div></div>
+      <div class="drow"><i class="ti ti-map-pin"></i><div id="d-loc"></div></div>
+      <div class="drow"><i class="ti ti-building"></i><div id="d-lab"></div></div>
+    </div>
+    <div class="dsec">
+      <div class="dsec-label">Profiles</div>
+      <div class="drow"><i class="ti ti-brand-linkedin"></i><div id="d-li"></div></div>
+      <div class="drow"><i class="ti ti-school"></i><div id="d-gs"></div></div>
+    </div>
+    <div class="dsec">
+      <div class="dsec-label">Research Interests</div>
+      <div id="d-int" style="font-size:13px;color:var(--text2);line-height:1.7;"></div>
+    </div>
+    <div class="dsec">
+      <div class="dsec-label">Recent Publications</div>
+      <div id="d-pubs"></div>
+    </div>
+    <div class="dsec">
+      <div class="dsec-label">Why a Fit for Voltera</div>
+      <div class="fit-box" id="d-fit"></div>
+    </div>
+    <div class="dsec" style="border-bottom:none;">
+      <div style="display:flex;gap:8px;">
+        <button class="btn primary" style="flex:1;" onclick="composeFromDrawer()"><i class="ti ti-mail"></i> Draft Email ↗</button>
+        <button class="btn" onclick="advanceFromDrawer()"><i class="ti ti-chevron-right"></i> Advance</button>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- GENERATING OVERLAY -->
+<div class="gen-overlay" id="gen-overlay">
+  <div class="gen-box"><i class="ti ti-loader-2 spin"></i><span id="gen-text">Working...</span></div>
+</div>
+
+<script>
+let API_KEY = '';
+let allLeads = [];
+let selectedLead = null;
+let drawerLead = null;
+let notes = [];
+let hsSyncCount = 0;
+
+const COLORS = [
+  {ac:'#1a2d4f',tc:'#a8c4fc'},{ac:'#1e1530',tc:'#c4b5fd'},
+  {ac:'#0e2e1f',tc:'#6ee7b7'},{ac:'#2e1f08',tc:'#fbbf24'},
+  {ac:'#2e1008',tc:'#fca5a5'},{ac:'#132e1a',tc:'#86efac'}
+];
+
+function startApp() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if(!key.startsWith('sk-ant-')) { alert('Please enter a valid Anthropic API key (starts with sk-ant-)'); return; }
+  API_KEY = key;
+  localStorage.setItem('voltera_api_key', key);
+  document.getElementById('api-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+}
+
+function logout() {
+  localStorage.removeItem('voltera_api_key');
+  location.reload();
+}
+
+// Check for saved key
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('voltera_api_key');
+  if(saved) {
+    API_KEY = saved;
+    document.getElementById('api-key-input').value = saved;
+    document.getElementById('api-screen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+  }
+});
+
+function showPanel(id, el) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  if(id==='pipeline') renderPipeline();
+  if(id==='notes') renderNotes();
+}
+
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',function(){this.classList.toggle('on');}));
+
+async function callClaude(prompt, maxTokens=3000) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: maxTokens, messages: [{role:'user',content:prompt}] })
+  });
+  if(!res.ok) throw new Error(`API error ${res.status}`);
+  const data = await res.json();
+  return data.content.map(c=>c.text||'').join('');
+}
+
+async function searchLeads() {
+  const areas = Array.from(document.querySelectorAll('.chip.on')).map(c=>c.dataset.filter);
+  const usState = document.getElementById('us-state').value;
+  const caProv = document.getElementById('ca-province').value;
+  const loc = usState || caProv || 'North America (USA and Canada)';
+  const areaStr = areas.length ? areas.join(', ') : 'printed electronics';
+
+  const btn = document.getElementById('search-btn');
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2 spin"></i> Searching...';
+
+  const area = document.getElementById('results-area');
+  area.innerHTML = '';
+  for(let i=0;i<5;i++) area.innerHTML += `<div class="loading-card"><div class="skeleton" style="width:40px;height:40px;border-radius:50%;flex-shrink:0;"></div><div style="flex:1;"><div class="skeleton" style="height:13px;width:50%;margin-bottom:8px;"></div><div class="skeleton" style="height:11px;width:35%;margin-bottom:8px;"></div><div class="skeleton" style="height:11px;width:65%;"></div></div></div>`;
+
+  const prompt = `You are a research assistant for Voltera, a company making benchtop additive electronics printers. Find 6 real academic researchers at universities in ${loc} whose work involves: ${areaStr}.
+
+Voltera products:
+- NOVA: for printed electronics R&D, flexible/stretchable electronics, microdispensing, functional materials, printed sensors, antennas, MEMS integration, in-mold electronics
+- V-One: rapid PCB prototyping
+
+Return ONLY a raw JSON array (no markdown, no commentary):
+[{"name":"Dr./Prof. Full Name","title":"Title, Department","org":"University","state":"State or Province","country":"US or CA","lab":"Lab name","area":"Specific research focus in 1 sentence","interests":"4-6 comma-separated interests","email":"email@university.edu","emailNote":"confirmed or estimated","phone":"dept phone or empty string","linkedin":"linkedin.com/in/profile or empty string","linkedinNote":"confirmed or search suggestion","academic":"full URL or empty string","academicNote":"confirmed or search suggestion","pubs":["Title (year)","Title (year)","Title (year)"],"product":"NOVA or V-One","fit":"2-3 sentences on why strong fit for Voltera and the recommended product","hindex":25}]`;
+
+  try {
+    const raw = await callClaude(prompt, 3500);
+    const start = raw.indexOf('['), end = raw.lastIndexOf(']');
+    const parsed = JSON.parse(raw.slice(start, end+1));
+    const newLeads = parsed.map((l,i) => ({
+      ...l, id: Date.now()+i, status: 'new',
+      initials: l.name.replace(/^(Dr\.|Prof\.)\s*/i,'').split(' ').filter(w=>w).slice(0,2).map(w=>w[0]).join(''),
+      ...COLORS[(allLeads.length+i) % COLORS.length]
+    }));
+    allLeads = [...allLeads, ...newLeads];
+    updateBadge();
+    renderLeads();
+  } catch(e) {
+    area.innerHTML = `<div class="empty-state"><i class="ti ti-alert-circle"></i><p>Search failed: ${e.message}<br>Please check your API key and try again.</p></div>`;
+  }
+  btn.disabled = false; btn.innerHTML = '<i class="ti ti-sparkles"></i> Search Academics';
+}
+
+function updateBadge() {
+  document.getElementById('lead-badge').textContent = `${allLeads.length} lead${allLeads.length!==1?'s':''}`;
+}
+
+function renderLeads() {
+  const area = document.getElementById('results-area');
+  if(!allLeads.length) { area.innerHTML='<div class="empty-state"><i class="ti ti-search-off"></i><p>No leads found.</p></div>'; return; }
+  area.innerHTML = `<div class="results-header"><div class="results-title">Showing ${allLeads.length} lead${allLeads.length!==1?'s':''}</div><span class="results-count">${allLeads.length} total</span></div>`;
+  allLeads.forEach(l => {
+    const div = document.createElement('div');
+    div.className = 'lead-card'+(selectedLead&&selectedLead.id===l.id?' selected':'');
+    const flag = l.country==='CA'?'🇨🇦':'🇺🇸';
+    div.innerHTML = `
+      <div class="lc-top">
+        <div class="lc-avatar" style="background:${l.ac};color:${l.tc};">${l.initials}</div>
+        <div class="lc-info">
+          <div class="lc-name"><span class="sdot ${l.status}"></span>${l.name}</div>
+          <div class="lc-title">${l.title} · ${l.org}</div>
+          <div class="lc-tags">
+            <span class="ltag gray">${flag} ${l.state}</span>
+            <span class="ltag blue">${l.area.length>38?l.area.slice(0,36)+'…':l.area}</span>
+            <span class="${l.product==='NOVA'?'ltag nova':'ltag amber'}">${l.product}</span>
+          </div>
+        </div>
+      </div>
+      <div class="lc-fit">${l.fit.split('.')[0]}.</div>
+      <div class="lc-actions">
+        <button class="btn" style="font-size:11px;padding:4px 10px;" onclick="event.stopPropagation();openDrawer(${l.id})"><i class="ti ti-user"></i> Profile</button>
+        <button class="btn" style="font-size:11px;padding:4px 10px;" onclick="event.stopPropagation();openCompose(${l.id})"><i class="ti ti-mail"></i> Draft Email ↗</button>
+        <button class="btn" style="font-size:11px;padding:4px 10px;" onclick="event.stopPropagation();advance(${l.id})"><i class="ti ti-chevron-right"></i> Advance</button>
+      </div>`;
+    div.onclick = () => { selectedLead=l; renderLeads(); };
+    area.appendChild(div);
+  });
+}
+
+function openDrawer(id) {
+  drawerLead = allLeads.find(l=>l.id===id);
+  const l = drawerLead;
+  const av = document.getElementById('d-av');
+  av.style.background=l.ac; av.style.color=l.tc; av.textContent=l.initials;
+  document.getElementById('d-name').textContent=l.name;
+  document.getElementById('d-sub').textContent=`${l.title} · ${l.org}`;
+  const en = l.emailNote==='estimated'?' <span class="note-dim">(estimated format)</span>':'';
+  document.getElementById('d-email').innerHTML=(l.email||'Not found')+en;
+  document.getElementById('d-phone').textContent=l.phone||'Not publicly listed';
+  document.getElementById('d-loc').textContent=`${l.state}, ${l.country==='CA'?'Canada':'USA'}`;
+  document.getElementById('d-lab').textContent=l.lab||'';
+  document.getElementById('d-li').innerHTML=l.linkedin
+    ?`<a href="https://${l.linkedin.replace(/^https?:\/\//,'')}" target="_blank">${l.linkedin}</a>${l.linkedinNote&&l.linkedinNote!=='confirmed'?'<br><span class="note-dim">'+l.linkedinNote+'</span>':''}`
+    :`<span style="color:var(--text3);">Search "${l.name} ${l.org}" on LinkedIn</span>`;
+  document.getElementById('d-gs').innerHTML=l.academic
+    ?`<a href="${l.academic.startsWith('http')?l.academic:'https://'+l.academic}" target="_blank">View Google Scholar profile</a>`
+    :`<span style="color:var(--text3);">Search "${l.name}" on Google Scholar</span>`;
+  document.getElementById('d-int').textContent=l.interests||'';
+  document.getElementById('d-pubs').innerHTML=(l.pubs||[]).map(p=>`<div class="pub-item"><i class="ti ti-file-text" style="font-size:12px;margin-right:6px;color:var(--text3);"></i>${p}</div>`).join('');
+  document.getElementById('d-fit').textContent=l.fit||'';
+  document.getElementById('drawer').style.display='flex';
+}
+
+function closeDrawer(e) { if(!e||e.target===document.getElementById('drawer')) document.getElementById('drawer').style.display='none'; }
+function composeFromDrawer() { document.getElementById('drawer').style.display='none'; openCompose(drawerLead.id); }
+function advanceFromDrawer() { advance(drawerLead.id); renderLeads(); }
+
+function openCompose(id) {
+  selectedLead = allLeads.find(l=>l.id===id);
+  showPanel('compose', document.querySelectorAll('.nav-tab')[1]);
+  document.getElementById('email-to').value=`${selectedLead.name} <${selectedLead.email||''}>`;
+  document.getElementById('email-subject').value='';
+  document.getElementById('email-body').value='';
+  const hint=document.getElementById('compose-hint');
+  hint.style.display='block';
+  hint.innerHTML=`<i class="ti ti-info-circle"></i> <strong>${selectedLead.product}</strong> recommended · ${selectedLead.lab}`;
+}
+
+async function generateEmail() {
+  if(!selectedLead){alert('Select a lead from Find Leads first.');return;}
+  const l=selectedLead;
+  document.getElementById('gen-overlay').style.display='flex';
+  document.getElementById('gen-text').textContent=`Drafting email for ${l.name}...`;
+  const prompt=`You are a sales rep at Voltera, a company making benchtop additive electronics printers. NOVA is for printed electronics R&D, flexible/stretchable electronics, microdispensing, printed sensors, antennas, MEMS integration. V-One is for rapid PCB prototyping. Key value props: iterate in-house in hours not weeks, open ink/substrate system, no MOQs, IP stays in-house.
+
+Write a short warm personalized cold outreach email to ${l.name}, ${l.title} at ${l.org}. Lab: ${l.lab}. Research: ${l.area}. Interests: ${l.interests}. Recommended product: ${l.product}. Why they fit: ${l.fit}
+
+Rules: open by genuinely referencing their specific research (not flattery), explain concretely how ${l.product} accelerates their work, mention 1-2 relevant value props, soft CTA for a call/demo, 3 short paragraphs, conversational not salesy, sign off "The Voltera Team". First line must be: Subject: [subject line here]. Return ONLY the email text.`;
+  try {
+    const text=await callClaude(prompt,1000);
+    const lines=text.trim().split('\n');
+    const sl=lines.find(l=>l.toLowerCase().startsWith('subject:'));
+    if(sl) document.getElementById('email-subject').value=sl.replace(/^subject:\s*/i,'').trim();
+    document.getElementById('email-body').value=lines.filter(l=>!l.toLowerCase().startsWith('subject:')).join('\n').trim();
+  } catch(e) {
+    document.getElementById('email-body').value='Could not generate email. Please check your API key.';
+  }
+  document.getElementById('gen-overlay').style.display='none';
+}
+
+function sendEmail() {
+  if(!selectedLead) return;
+  const l=allLeads.find(x=>x.id===selectedLead.id);
+  if(l&&l.status==='new') l.status='contacted';
+  hsSyncCount++;
+  document.getElementById('hs-synced').innerHTML=`<i class="ti ti-check"></i> ${hsSyncCount} contact${hsSyncCount!==1?'s':''}`;
+  document.getElementById('hs-time').textContent='Just now';
+  const c=document.getElementById('confirm-msg');
+  c.style.display='flex'; setTimeout(()=>c.style.display='none',3000);
+  renderLeads();
+}
+
+function advance(id) {
+  const l=allLeads.find(x=>x.id===id);
+  if(!l) return;
+  const order=['new','contacted','replied','qualified'];
+  const i=order.indexOf(l.status);
+  if(i<order.length-1) l.status=order[i+1];
+  renderLeads(); renderPipeline();
+}
+
+function renderPipeline() {
+  ['new','contacted','replied','qualified'].forEach(s=>{
+    const items=allLeads.filter(l=>l.status===s);
+    document.getElementById('cnt-'+s).textContent=items.length;
+    document.getElementById('col-'+s).innerHTML=items.length
+      ?items.map(l=>`<div class="kcard"><div class="kcard-name">${l.name}</div><div class="kcard-sub">${l.org}</div><div style="margin-top:5px;"><span class="ltag ${l.product==='NOVA'?'nova':'amber'}" style="font-size:10px;">${l.product}</span></div></div>`).join('')
+      :`<div style="font-size:11px;color:var(--text3);text-align:center;padding:12px;">Empty</div>`;
+  });
+}
+
+function renderNotes() {
+  const el=document.getElementById('notes-list');
+  el.innerHTML=notes.length
+    ?notes.map(n=>`<div class="note-card"><div class="note-head"><span class="note-who">${n.lead}</span><span class="note-when">${n.date}</span></div><div class="note-body">${n.text}</div></div>`).join('')
+    :'<div class="empty-state"><i class="ti ti-phone"></i><p>No call notes yet.</p></div>';
+}
+
+function logNote() {
+  if(!allLeads.length){alert('Find leads first.');return;}
+  const lead=selectedLead||allLeads[0];
+  const text=prompt(`Call note for ${lead.name}:`);
+  if(text){notes.unshift({lead:lead.name,date:new Date().toLocaleString(),text});renderNotes();}
+}
+
+async function syncHubspot() {
+  const btn=document.getElementById('hs-btn');
+  btn.disabled=true; btn.innerHTML='<i class="ti ti-loader-2 spin"></i> Syncing...';
+  await new Promise(r=>setTimeout(r,1200));
+  hsSyncCount=allLeads.length;
+  document.getElementById('hs-synced').innerHTML=`<i class="ti ti-check"></i> ${hsSyncCount} contacts`;
+  document.getElementById('hs-time').textContent=new Date().toLocaleTimeString();
+  document.getElementById('hs-log').innerHTML=allLeads.map(l=>`<div style="padding:6px 0;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:12px;"><span>${l.name} <span style="color:var(--text3);">· ${l.org}</span></span><span style="color:var(--green);">✓ ${l.status}</span></div>`).join('');
+  btn.disabled=false; btn.innerHTML='<i class="ti ti-refresh"></i> Sync All Leads';
+}
+</script>
+</body>
+</html>
